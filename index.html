@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pork Hub - Integrated Command Platform</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Strict pixel configurations for predictable layout structures */
+        * {
+            margin: 0px;
+            padding: 0px;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .bg-pork-blue { background-color: #1e3a8a; }
+        .text-pork-blue { color: #1e3a8a; }
+        .bg-pork-green { background-color: #15803d; }
+        .text-pork-green { color: #15803d; }
+        .bg-pork-gold { background-color: #eab308; }
+        .text-pork-gold { color: #eab308; }
+        .border-pork-green { border-color: #15803d; }
+        
+        /* Master Entrance Portal Explicit Pixel Layout Styles */
+        .portal-body {
+            background-color: #f4f7f6;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .portal-container {
+            width: 800px;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0px 8px 24px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+            border: 1px solid #e0e0e0;
+        }
+        .portal-header {
+            background-color: #1e3a8a;
+            padding: 30px 20px;
+            text-align: center;
+            border-bottom: 4px solid #15803d;
+        }
+        .portal-header h1 {
+            color: #ffffff;
+            font-size: 32px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+        .portal-header p {
+            color: #cbd5e1;
+            font-size: 14px;
+        }
+        .portal-selection { display: flex; width: 100%; }
+        .portal-card {
+            width: 400px;
+            padding: 50px 40px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            transition: background-color 0.3s ease;
+        }
+        .customer-side { border-right: 1px solid #eeeeee; }
+        .kitchen-side { background-color: #fafbfc; }
+        .portal-card:hover { background-color: #f9fbf9; }
+        .icon-circle {
+            width: 90px;
+            height: 90px;
+            border-radius: 45px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+        .customer-side .icon-circle { background-color: #e8f8f5; border: 2px solid #15803d; }
+        .kitchen-side .icon-circle { background-color: #eaf2f8; border: 2px solid #1e3a8a; }
+        .portal-card h2 { font-size: 24px; margin-bottom: 12px; font-weight: 600; }
+        .customer-side h2 { color: #15803d; }
+        .kitchen-side h2 { color: #1e3a8a; }
+        .portal-card p { color: #7f8c8d; font-size: 14px; line-height: 20px; margin-bottom: 30px; height: 40px; }
+        .portal-btn {
+            width: 220px;
+            height: 46px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .btn-customer { background-color: #15803d; color: #ffffff; }
+        .btn-kitchen { background-color: #1e3a8a; color: #ffffff; }
+        
+        /* Webkit Scrollbars Custom Fit */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    </style>
+</head>
+<body class="bg-gray-100 font-sans h-screen overflow-hidden">
+
+    <div id="app-view-portal" class="portal-body">
+        <div class="portal-container">
+            <div class="portal-header">
+                <h1>PORK HUB</h1>
+                <p>Command & Ordering Platform Terminal Gateway</p>
+            </div>
+            <div class="portal-selection">
+                <div class="portal-card customer-side">
+                    <div class="icon-circle">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="#15803d" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                    </div>
+                    <h2>Customer Portal</h2>
+                    <p>Enter your profile details, fetch a secure dynamic entry PIN, and place orders directly to the kitchen.</p>
+                    <button class="portal-btn btn-customer" onclick="switchAppView('customer')">Login as Customer</button>
+                </div>
+                <div class="portal-card kitchen-side">
+                    <div class="icon-circle">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="#1e3a8a" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
+                    </div>
+                    <h2>Kitchen Desk</h2>
+                    <p>Manage operational food queues, update fulfillment countdown trackers, and review cash logs.</p>
+                    <button class="portal-btn btn-kitchen" onclick="switchAppView('kitchen')">Login as Attendant</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="app-view-workspace" class="hidden h-full flex flex-col">
+        <header class="bg-pork-blue text-white p-4 shadow-md flex justify-between items-center z-10">
+            <div class="flex items-center space-x-2">
+                <span class="text-2xl">🔥</span>
+                <h1 class="text-xl font-black tracking-wide uppercase">Pork Hub Control Matrix</h1>
+            </div>
+            <button onclick="switchAppView('portal')" class="text-xs bg-slate-800 hover:bg-slate-700 px-3 py-1.5 rounded-lg text-gray-300 font-mono font-bold">
+                ← Log Out & Switch User
+            </button>
+        </header>
+
+        <main class="flex flex-1 overflow-hidden relative">
+
+            <div id="logistics-popup-modal" class="hidden fixed inset-0 bg-black/70 z-50 flex justify-center items-center p-4 backdrop-blur-sm">
+                <div class="bg-white p-6 rounded-2xl shadow-2xl w-full max-w-md text-center space-y-4">
+                    <div class="w-16 h-16 bg-yellow-100 text-yellow-600 rounded-full flex justify-center items-center text-3xl mx-auto font-bold">🔔</div>
+                    <h3 class="text-xl font-black text-slate-900 uppercase tracking-tight">Your Order Is Ready!</h3>
+                    <p class="text-xs text-gray-500 font-mono">Ticket ID: <span id="modal-ticket-id" class="text-pork-blue font-bold">---</span></p>
+                    <p class="text-sm font-medium text-gray-700">Please select how you want to collect your food:</p>
+                    <div class="grid grid-cols-2 gap-3 pt-2">
+                        <button onclick="submitLogisticsChoice('Takeaway')" class="bg-pork-gold hover:bg-yellow-500 text-slate-900 font-black py-4 rounded-xl flex flex-col items-center justify-center space-y-1 shadow">
+                            <span class="text-2xl">🛍️</span>
+                            <span class="text-xs uppercase tracking-wider">Takeaway Bag</span>
+                        </button>
+                        <button onclick="submitLogisticsChoice('Dine-In')" class="bg-pork-blue hover:bg-blue-900 text-white font-black py-4 rounded-xl flex flex-col items-center justify-center space-y-1 shadow">
+                            <span class="text-2xl">🍽️</span>
+                            <span class="text-xs uppercase tracking-wider">Serve on Tray</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <section id="module-customer" class="hidden w-full h-full bg-slate-50 p-4 flex flex-col overflow-hidden relative">
+                <div id="auth-gate-customer" class="absolute inset-0 bg-slate-100 z-40 p-6 flex flex-col justify-center items-center">
+                    <div class="bg-white p-6 rounded-2xl shadow-xl w-full max-w-sm border border-gray-200 text-center space-y-4">
+                        <p class="text-3xl">📱</p>
+                        <h3 class="text-lg font-black text-pork-blue uppercase">Diner Identity Token Check</h3>
+                        
+                        <div id="cust-auth-step-1" class="space-y-3">
+                            <p class="text-xs text-gray-400">Request your 4-digit verification code string parameter.</p>
+                            <div class="space-y-2 text-left">
+                                <label class="block text-[10px] font-bold uppercase text-gray-500">Diner Name</label>
+                                <input type="text" id="login-cust-name" placeholder="Ivan K." class="w-full p-2.5 text-sm rounded-xl border outline-none bg-white">
+                                <label class="block text-[10px] font-bold uppercase text-gray-500">Mobile Phone Coordinate</label>
+                                <input type="tel" id="login-cust-phone" placeholder="0700000000" class="w-full p-2.5 text-sm rounded-xl border outline-none text-center font-bold bg-white">
+                            </div>
+                            <button onclick="generateCustomerOtpCode()" class="w-full bg-pork-blue text-white font-black py-2.5 rounded-xl uppercase text-xs tracking-wider shadow">
+                                Request Entry Code ⚡
+                            </button>
+                        </div>
+
+                        <div id="cust-auth-step-2" class="space-y-3 hidden border-t pt-3 border-dashed">
+                            <p class="text-xs text-emerald-600 font-bold bg-emerald-50 p-2 rounded-lg">✓ Security code issued to system broadcast loop.</p>
+                            <label class="block text-[10px] font-bold uppercase text-center text-gray-500">Type Handset PIN Key</label>
+                            <input type="text" id="login-cust-otp-input" placeholder="••••" maxlength="4" class="w-28 mx-auto block p-2 text-xl tracking-widest text-center font-mono rounded-xl border outline-none font-black text-pork-blue bg-white">
+                            <button onclick="verifyCustomerOtpAndLogin()" class="w-full bg-pork-green text-white font-black py-2.5 rounded-xl uppercase text-xs tracking-wider shadow">
+                                Unlock Active Menu
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex border-b border-gray-200 mb-4 bg-white p-1.5 rounded-xl shadow-sm max-w-md mx-auto w-full">
+                    <button id="tab-btn-create" onclick="switchCustomerTab('create')" class="flex-1 text-center py-2 text-xs font-black uppercase rounded-lg bg-pork-blue text-white transition-all shadow-sm">📝 Place New Order</button>
+                    <button id="tab-btn-hub" onclick="switchCustomerTab('hub')" class="flex-1 text-center py-2 text-xs font-black uppercase rounded-lg text-gray-500 hover:bg-gray-100 transition-all ml-1 flex justify-center items-center space-x-2">
+                        <span>📱 My Active Tickets</span>
+                        <span id="customer-hub-badge" class="bg-red-500 text-white font-mono text-[10px] px-1.5 py-0.5 rounded-full hidden">0</span>
+                    </button>
+                </div>
+
+                <div id="panel-customer-create" class="flex flex-col justify-between flex-1 overflow-hidden max-w-md mx-auto w-full bg-white p-3 rounded-2xl shadow-sm border border-gray-100">
+                    <div class="space-y-3 overflow-y-auto pr-1 flex-1 pb-4">
+                        <div class="bg-gradient-to-r from-blue-900 to-indigo-950 p-3 rounded-xl text-white shadow-inner flex justify-between items-center">
+                            <div>
+                                <p class="text-[9px] uppercase font-mono text-blue-300">Diner Profile Track</p>
+                                <h4 id="user-greeting-name" class="text-sm font-black tracking-wide">Welcome!</h4>
+                            </div>
+                            <button onclick="logOutCustomer()" class="text-[10px] bg-white/10 px-2 py-1 rounded font-mono text-red-300">Reset Session</button>
+                        </div>
+
+                        <div class="bg-blue-50 border border-blue-200 p-3 rounded-xl space-y-2.5">
+                            <div>
+                                <label class="block text-[10px] font-black text-pork-blue uppercase tracking-wider mb-1">Where should we deliver your food?</label>
+                                <input type="text" id="cust-location" placeholder="e.g., Table 4, Counter Seat..." class="w-full p-2 text-xs rounded-lg border bg-white outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-black text-pork-blue uppercase tracking-wider mb-1">Serving Arrangement Layout Style:</label>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <label class="bg-white p-2 rounded-lg border flex items-center space-x-2 text-xs font-bold text-gray-700 cursor-pointer"><input type="radio" name="initial-logistics" value="Dine-In" checked class="w-3.5 h-3.5 checked:bg-pork-blue text-pork-blue"> <span>🍽️ Dine-In</span></label>
+                                    <label class="bg-white p-2 rounded-lg border flex items-center space-x-2 text-xs font-bold text-gray-700 cursor-pointer"><input type="radio" name="initial-logistics" value="Takeaway" class="w-3.5 h-3.5 text-pork-blue"> <span>🛍️ Takeaway</span></label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="space-y-2" id="menu-item-list"></div>
+                    </div>
+
+                    <div class="bg-slate-50 border p-3 rounded-xl">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="font-bold text-gray-500 text-xs">Total Bill Due:</span>
+                            <span id="cust-total-price" class="text-base font-black text-pork-blue">0 UGX</span>
+                        </div>
+                        <button onclick="placeCustomerOrder()" class="w-full bg-pork-green text-white font-bold py-2.5 rounded-xl tracking-wide hover:bg-green-800 uppercase text-xs shadow">Commit Order Stream</button>
+                    </div>
+                </div>
+
+                <div id="panel-customer-hub" class="hidden flex-col flex-1 overflow-hidden max-w-md mx-auto w-full">
+                    <p class="text-[11px] text-gray-500 font-black uppercase mb-2 tracking-wider">My Running Kitchen Tickets Status:</p>
+                    <div id="customer-active-pipeline-list" class="space-y-3 flex-1 overflow-y-auto pr-1 pb-4"></div>
+                    <div class="border-t pt-2 mt-2 h-[110px] flex flex-col overflow-hidden">
+                        <p class="text-[10px] text-gray-400 font-bold uppercase mb-1 tracking-wider font-mono">My Settlement History Logs:</p>
+                        <div class="flex-1 overflow-y-auto bg-white border rounded-lg p-2 font-mono text-[10px] text-gray-600 space-y-1" id="customer-ledger-box"></div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="module-kitchen" class="hidden w-full h-full bg-slate-900 p-4 flex flex-col text-white overflow-hidden relative">
+                <div id="auth-gate-kitchen" class="absolute inset-0 bg-slate-950 z-40 p-6 flex flex-col justify-center items-center">
+                    <div class="bg-slate-900 p-6 rounded-2xl shadow-2xl w-full max-w-sm border border-slate-800 text-center space-y-4">
+                        <p class="text-3xl">🎛️</p>
+                        <h3 class="text-lg font-black text-pork-gold uppercase tracking-wider">Kitchen Desk Terminal Check</h3>
+                        <p class="text-xs text-slate-400">Restricted operational viewport. Enter active hardware config master password pin.</p>
+                        <input type="password" id="login-kitchen-pin" placeholder="••••" maxlength="8" class="w-40 mx-auto block p-2 text-xl tracking-widest bg-slate-950 border border-slate-700 text-pork-gold text-center font-mono rounded-xl outline-none">
+                        <button onclick="authenticateKitchenSession()" class="w-full bg-pork-gold text-slate-900 font-black py-2.5 rounded-xl uppercase text-xs tracking-wider shadow">Boot Desk Console</button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2 mb-3 bg-slate-950 p-3 rounded-xl border border-slate-800 font-mono max-w-xl mx-auto w-full">
+                    <div class="bg-slate-900/60 p-2.5 rounded-lg"><p class="text-[9px] uppercase text-gray-400">Total Revenue Settled ✓</p><p id="ledger-revenue-paid" class="text-base font-black text-green-400 mt-0.5">0 UGX</p></div>
+                    <div class="bg-slate-900/60 p-2.5 rounded-lg"><p class="text-[9px] uppercase text-gray-400">Pending Preparation Value ⏳</p><p id="ledger-revenue-pending" class="text-base font-black text-yellow-500 mt-0.5">0 UGX</p></div>
+                </div>
+
+                <div class="flex items-center justify-between border-b border-slate-800 pb-2 mb-2 max-w-xl mx-auto w-full">
+                    <div class="flex items-center space-x-2">
+                        <h2 class="text-xs font-black text-pork-gold uppercase tracking-widest">Attendant Ticket Stream</h2>
+                        <span id="ticket-count" class="text-[10px] bg-slate-800 px-2 py-0.5 rounded text-gray-400">0 Open</span>
+                    </div>
+                    <button onclick="toggleAdminPasswordTab()" class="text-[9px] bg-blue-950 border border-blue-800 text-blue-300 px-2 py-0.5 rounded font-mono">🔑 Swap Password String</button>
+                </div>
+
+                <div id="kitchen-admin-password-box" class="hidden bg-slate-950 border border-blue-900/60 p-3 rounded-xl mb-3 space-y-2 font-mono text-xs max-w-xl mx-auto w-full">
+                    <p class="text-pork-gold font-bold uppercase text-[9px] tracking-wider">🔒 Administrative Credentials Workspace Configuration Tool</p>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div><label class="block text-[8px] text-slate-500 uppercase">Old Running Password</label><input type="password" id="admin-change-old" class="w-full bg-slate-900 border border-slate-800 text-white rounded p-1 text-xs outline-none"></div>
+                        <div><label class="block text-[8px] text-slate-500 uppercase">New Target Key Pin</label><input type="password" id="admin-change-new" placeholder="Min 4 Digits" class="w-full bg-slate-900 border border-slate-800 text-pork-gold rounded p-1 text-xs outline-none"></div>
+                    </div>
+                    <div class="flex justify-end space-x-2 pt-1">
+                        <button onclick="toggleAdminPasswordTab()" class="text-[9px] text-slate-400 px-2 py-0.5">Dismiss</button>
+                        <button onclick="commitNewKitchenPassword()" class="bg-pork-green text-white text-[9px] font-bold px-3 py-1 rounded">Commit Configuration Shift</button>
+                    </div>
+                </div>
+
+                <div class="flex-1 flex flex-col overflow-hidden max-w-xl mx-auto w-full">
+                    <div id="kitchen-queue" class="space-y-2 flex-1 overflow-y-auto pr-1"></div>
+                    
+                    <div class="border-t border-slate-800 pt-2 mt-2 h-[130px] flex flex-col overflow-hidden">
+                        <p class="text-[10px] text-slate-500 font-black uppercase tracking-wider mb-1">HQ Immutable Audit Ledger Logs</p>
+                        <div class="flex-1 overflow-y-auto bg-slate-950 rounded-lg border border-slate-800 p-2 font-mono text-[9px] text-slate-400">
+                            <table class="w-full text-left">
+                                <thead><tr class="border-b border-slate-900 text-slate-600 text-[8px] font-black"><th class="pb-1">Ticket</th><th class="pb-1">Client</th><th class="pb-1">Items Summary</th><th class="pb-1 text-right">Revenue</th></tr></thead>
+                                <tbody id="kitchen-audit-rows" class="divide-y divide-slate-900/40"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        const menuPrices = { fried1kg: 18000, fried05kg: 10000, choma1kg: 20000, beer: 5000 };
+        const menuLabels = { fried1kg: "Fried Pork (1 Kg)", fried05kg: "Fried Pork (0.5 Kg)", choma1kg: "Choma Roast (1 Kg)", beer: "Cold Beer" };
+        let currentQuantities = { fried1kg: 0, fried05kg: 0, choma1kg: 0, beer: 0 };
+        
+        let globalOrders = [];
+        let globalArchiveLog = [];
+        let activeCustomerSession = null; 
+        let generatedCustomerCodeTracker = null; 
+        let kitchenMasterPin = "1234"; 
+        let currentModalTicketId = null;
+
+        // Unified Viewport Switch State Routing Mechanism
+        function switchAppView(viewTarget) {
+            const portal = document.getElementById('app-view-portal');
+            const workspace = document.getElementById('app-view-workspace');
+            const custModule = document.getElementById('module-customer');
+            const kitchModule = document.getElementById('module-kitchen');
+
+            if (viewTarget === 'portal') {
+                portal.classList.remove('hidden'); portal.classList.add('portal-body');
+                workspace.classList.add('hidden');
+                // Reset internal view locks on log out
+                document.getElementById('login-kitchen-pin').value = "";
+                document.getElementById('auth-gate-kitchen').classList.remove('hidden');
+            } else {
+                portal.classList.remove('portal-body'); portal.classList.add('hidden');
+                workspace.classList.remove('hidden');
+                
+                if (viewTarget === 'customer') {
+                    custModule.classList.remove('hidden'); kitchModule.classList.add('hidden');
+                } else {
+                    kitchModule.classList.remove('hidden'); custModule.classList.add('hidden');
+                }
+            }
+            updateSystemViews();
+        }
+
+        function buildCustomerMenuUI() {
+            const menuBox = document.getElementById('menu-item-list');
+            menuBox.innerHTML = "";
+            for (const key in menuPrices) {
+                const row = document.createElement('div');
+                row.className = "bg-white p-2.5 rounded-xl shadow-sm border flex justify-between items-center text-xs";
+                row.innerHTML = `
+                    <div><h4 class="font-bold text-gray-800">${menuLabels[key]}</h4><p class="text-[11px] text-pork-green font-bold">${menuPrices[key].toLocaleString()} UGX</p></div>
+                    <div class="flex items-center space-x-2">
+                        <button onclick="changeQty('${key}', -1)" class="w-6 h-6 bg-gray-200 rounded font-bold">-</button>
+                        <span id="qty-${key}" class="w-4 text-center font-bold">0</span>
+                        <button onclick="changeQty('${key}', 1)" class="w-6 h-6 bg-pork-blue text-white rounded font-bold">+</button>
+                    </div>`;
+                menuBox.appendChild(row);
+            }
+        }
+
+        function changeQty(item, delta) {
+            currentQuantities[item] += delta;
+            if (currentQuantities[item] < 0) currentQuantities[item] = 0;
+            document.getElementById(`qty-${item}`).innerText = currentQuantities[item];
+            let total = 0;
+            for (const key in currentQuantities) total += currentQuantities[key] * menuPrices[key];
+            document.getElementById('cust-total-price').innerText = total.toLocaleString() + " UGX";
+        }
+
+        function generateCustomerOtpCode() {
+            let name = document.getElementById('login-cust-name').value.trim();
+            let phone = document.getElementById('login-cust-phone').value.trim();
+            if (!name || !phone) { alert("Please input credential parameter boundaries."); return; }
+            generatedCustomerCodeTracker = String(Math.floor(1000 + Math.random() * 9000));
+            alert(`💬 ACCESS PASSCODE KEY ALERT:\nYour secure code parameter string variable is: [ ${generatedCustomerCodeTracker} ]`);
+            document.getElementById('cust-auth-step-1').classList.add('hidden');
+            document.getElementById('cust-auth-step-2').classList.remove('hidden');
+        }
+
+        function verifyCustomerOtpAndLogin() {
+            let codeInput = document.getElementById('login-cust-otp-input').value.trim();
+            if (codeInput === generatedCustomerCodeTracker && generatedCustomerCodeTracker !== null) {
+                activeCustomerSession = { name: document.getElementById('login-cust-name').value.trim(), phone: document.getElementById('login-cust-phone').value.trim() };
+                document.getElementById('user-greeting-name').innerText = `${activeCustomerSession.name} (${activeCustomerSession.phone})`;
+                document.getElementById('auth-gate-customer').classList.add('hidden');
+                updateSystemViews();
+            } else { alert("AUTHENTICATION REJECTION: Verification pin data mismatch."); }
+        }
+
+        function logOutCustomer() {
+            activeCustomerSession = null; generatedCustomerCodeTracker = null;
+            document.getElementById('login-cust-otp-input').value = "";
+            document.getElementById('cust-auth-step-2').classList.add('hidden');
+            document.getElementById('cust-auth-step-1').classList.remove('hidden');
+            document.getElementById('auth-gate-customer').classList.remove('hidden');
+        }
+
+        function authenticateKitchenSession() {
+            if (document.getElementById('login-kitchen-pin').value.trim() === kitchenMasterPin) {
+                document.getElementById('auth-gate-kitchen').classList.add('hidden');
+            } else { alert("ACCESS REJECTED: Incorrect administrative attendant pin password validation."); }
+        }
+
+        function toggleAdminPasswordTab() {
+            document.getElementById('kitchen-admin-password-box').classList.toggle('hidden');
+        }
+
+        function commitNewKitchenPassword() {
+            let oldPin = document.getElementById('admin-change-old').value.trim();
+            let newPin = document.getElementById('admin-change-new').value.trim();
+            if (oldPin !== kitchenMasterPin) { alert("ERROR: Master validation checkpoint key mismatch."); return; }
+            if (newPin.length < 4) { alert("ERROR: Passcode complexity allocation threshold rule violation."); return; }
+            kitchenMasterPin = newPin;
+            alert("SUCCESS: Attendant console master login PIN key modified.");
+            toggleAdminPasswordTab();
+        }
+
+        function placeCustomerOrder() {
+            let loc = document.getElementById('cust-location').value.trim();
+            let logisticalPreference = document.querySelector('input[name="initial-logistics"]:checked').value;
+            if (!loc) { alert("Please allocate table coordinates location parameter string."); return; }
+
+            let items = []; let sum = 0;
+            for (const key in currentQuantities) {
+                if (currentQuantities[key] > 0) {
+                    items.push(`${currentQuantities[key]}x [${menuLabels[key]}]`);
+                    sum += currentQuantities[key] * menuPrices[key];
+                }
+            }
+            if (items.length === 0) { alert("Your meal cart basket holds 0 item streams."); return; }
+
+            globalOrders.push({
+                id: `PK-${Math.floor(Math.random()*900)+100}`, name: activeCustomerSession.name, phone: activeCustomerSession.phone,
+                location: loc, details: items.join(", "), priceValue: sum, status: 'Queued', logistics: logisticalPreference,
+                popupPromptTriggered: false, finalHandoutStyle: "Awaiting Logistics Flag Match"
+            });
+
+            for (const key in currentQuantities) currentQuantities[key] = 0;
+            buildCustomerMenuUI();
+            document.getElementById('cust-total-price').innerText = "0 UGX";
+            document.getElementById('cust-location').value = "";
+            switchCustomerTab('hub');
+        }
+
+        function switchCustomerTab(tab) {
+            if (tab === 'create') {
+                document.getElementById('panel-customer-create').classList.remove('hidden');
+                document.getElementById('panel-customer-hub').classList.add('hidden');
+            } else {
+                document.getElementById('panel-customer-create').classList.add('hidden');
+                document.getElementById('panel-customer-hub').classList.remove('hidden');
+            }
+            updateSystemViews();
+        }
+
+        window.triggerKitchenCountdown = function(id, mins) {
+            let o = globalOrders.find(x => x.id === id);
+            if (o) { o.status = 'Baking'; o.endTime = Date.now() + (mins * 60 * 1000); updateSystemViews(); }
+        };
+
+        window.triggerKitchenReady = function(id) {
+            let o = globalOrders.find(x => x.id === id);
+            if (o) { o.status = 'Ready'; o.endTime = null; updateSystemViews(); }
+        };
+
+        window.archiveSettleTicket = function(id) {
+            let idx = globalOrders.findIndex(x => x.id === id);
+            if (idx !== -1) {
+                let o = globalOrders[idx];
+                globalArchiveLog.push({ id: o.id, client: o.name, phone: o.phone, items: o.details, payout: o.priceValue, logistics: o.logistics, timestamp: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) });
+                globalOrders.splice(idx, 1);
+                updateSystemViews();
+            }
+        };
+
+        function submitLogisticsChoice(choice) {
+            let o = globalOrders.find(x => x.id === currentModalTicketId);
+            if (o) { o.logistics = choice; o.finalHandoutStyle = choice === "Takeaway" ? "Pack inside Takeaway Bag" : "Serve over Wooden Tray Platter"; }
+            document.getElementById('logistics-popup-modal').classList.add('hidden');
+            currentModalTicketId = null;
+            updateSystemViews();
+        }
+
+        function updateSystemViews() {
+            // Context Diner View Pipelines Updater Loop
+            if (activeCustomerSession) {
+                let myTickets = globalOrders.filter(x => x.phone === activeCustomerSession.phone);
+                document.getElementById('customer-hub-badge').innerText = myTickets.length;
+                
+                const pipeBox = document.getElementById('customer-active-pipeline-list');
+                pipeBox.innerHTML = myTickets.length === 0 ? '<div class="text-center py-4 text-xs italic text-gray-400">No open kitchen entries inside tracking arrays.</div>' : "";
+                
+                myTickets.forEach(o => {
+                    let timerText = "Queued Pipeline Line Parameter";
+                    if (o.status === 'Baking' && o.endTime) {
+                        let rem = o.endTime - Date.now();
+                        timerText = rem > 0 ? `Grilling: ${Math.floor(rem/60000)}m left` : "Plating Portions";
+                    } else if (o.status === 'Ready') { timerText = o.finalHandoutStyle; }
+                    
+                    const div = document.createElement('div');
+                    div.className = "bg-white p-3 rounded-xl border border-gray-200 shadow-sm text-xs";
+                    div.innerHTML = `
+                        <div class="flex justify-between font-bold"><span>${o.id} [${o.logistics}]</span><span class="text-pork-blue uppercase text-[10px]">${o.status}</span></div>
+                        <p class="text-gray-600 mt-1">${o.details}</p>
+                        <div class="border-t mt-1 pt-1 text-[10px] text-gray-400 flex justify-between"><span>Status:</span><span class="font-bold text-pork-blue">${timerText}</span></div>`;
+                    pipeBox.appendChild(div);
+                });
+
+                let popupCheck = globalOrders.find(x => x.phone === activeCustomerSession.phone && x.status === 'Ready' && !x.popupPromptTriggered);
+                if (popupCheck) {
+                    popupCheck.popupPromptTriggered = true; currentModalTicketId = popupCheck.id;
+                    document.getElementById('modal-ticket-id').innerText = popupCheck.id;
+                    document.getElementById('logistics-popup-modal').classList.remove('hidden');
+                }
+
+                const clientLedgerBox = document.getElementById('customer-ledger-box');
+                let myPastArchives = globalArchiveLog.filter(l => l.phone === activeCustomerSession.phone);
+                clientLedgerBox.innerHTML = myPastArchives.length === 0 ? '<p class="text-center text-gray-400 italic py-2">Clear transaction history matrix.</p>' : "";
+                myPastArchives.forEach(log => {
+                    const entry = document.createElement('div');
+                    entry.className = "border-b border-gray-100 py-0.5 flex justify-between items-center text-gray-500 text-[9px]";
+                    entry.innerHTML = `<span>[${log.timestamp}] Released [${log.logistics}] <strong>${log.id}</strong></span><span class="text-pork-green font-bold">+${log.payout.toLocaleString()}</span>`;
+                    clientLedgerBox.appendChild(entry);
+                });
+            }
+
+            // Attendant Desk Screen View pipelines Queue Engine Loops
+            document.getElementById('ticket-count').innerText = `${globalOrders.length} Open`;
+            let paidSum = 0; let pendingSum = 0;
+            globalOrders.forEach(x => pendingSum += x.priceValue);
+
+            const qBox = document.getElementById('kitchen-queue');
+            qBox.innerHTML = globalOrders.length === 0 ? '<div class="text-center py-6 text-slate-500 font-mono text-xs">Queue clean. Tracking matrix idling.</div>' : "";
+            
+            globalOrders.forEach(o => {
+                let ctrls = "";
+                if (o.status === 'Queued') {
+                    ctrls = `<div class="grid grid-cols-2 gap-1 mt-2"><button onclick="triggerKitchenCountdown('${o.id}', 15)" class="bg-slate-950 text-[10px] py-1 rounded font-bold hover:bg-slate-900">Grid 15m</button><button onclick="triggerKitchenCountdown('${o.id}', 30)" class="bg-slate-950 text-[10px] py-1 rounded font-bold hover:bg-slate-900">Grid 30m</button></div>`;
+                } else if (o.status === 'Baking') {
+                    ctrls = `<div class="flex justify-between items-center mt-2"><span class="text-xs text-yellow-400 font-bold animate-pulse">Grilling Mode Active...</span><button onclick="triggerKitchenReady('${o.id}')" class="bg-pork-green text-white text-[10px] px-2 py-1 rounded font-bold">Mark Ready</button></div>`;
+                } else if (o.status === 'Ready') {
+                    ctrls = `<div class="flex flex-col space-y-1 mt-2"><p class="text-[9px] text-pork-gold font-bold font-mono">Layout Match: ${o.finalHandoutStyle}</p><button onclick="archiveSettleTicket('${o.id}')" class="bg-pork-green text-white text-[10px] py-1 rounded font-bold uppercase tracking-wider">Settle & Close Logs</button></div>`;
+                }
+
+                const block = document.createElement('div');
+                block.className = "bg-slate-800 p-2.5 rounded-xl text-xs max-w-xl mx-auto w-full border border-slate-700/40";
+                block.innerHTML = `
+                    <div class="font-bold flex justify-between"><span>${o.id} - ${o.name} [${o.logistics}]</span><span class="text-pork-gold font-mono">${o.priceValue.toLocaleString()} UGX</span></div>
+                    <p class="text-slate-300 font-mono mt-0.5">${o.details} [${o.location}]</p>${ctrls}`;
+                qBox.appendChild(block);
+            });
+
+            const auditBox = document.getElementById('kitchen-audit-rows');
+            auditBox.innerHTML = globalArchiveLog.length === 0 ? '<tr><td colspan="4" class="text-center py-2 text-slate-600 text-[10px]">Zero transaction balances recorded in local index files.</td></tr>' : "";
+            globalArchiveLog.forEach(l => {
+                paidSum += l.payout;
+                const tr = document.createElement('tr'); tr.className = "text-[10px] text-slate-300 font-mono border-b border-slate-900/30";
+                tr.innerHTML = `<td class="py-0.5 text-pork-gold">${l.id}</td><td>${l.client}</td><td>${l.items}</td><td class="text-right text-green-400 font-bold">${l.payout.toLocaleString()}</td>`;
+                auditBox.appendChild(tr);
+            });
+
+            document.getElementById('ledger-revenue-paid').innerText = paidSum.toLocaleString() + " UGX";
+            document.getElementById('ledger-revenue-pending').innerText = pendingSum.toLocaleString() + " UGX";
+        }
+
+        buildCustomerMenuUI();
+        setInterval(updateSystemViews, 1000); // 1-second system polling tracking frequency
+    </script>
+</body>
+</html>

@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pork Hub - Customer Portal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        * { margin: 0px; padding: 0px; box-sizing: border-box; }
+        .bg-pork-blue { background-color: #1e3a8a; }
+        .text-pork-blue { color: #1e3a8a; }
+        .bg-pork-green { background-color: #15803d; }
+        .text-pork-green { color: #15803d; }
+        .bg-pork-gold { background-color: #eab308; }
+    </style>
+</head>
+<body class="bg-gray-100 h-screen flex flex-col overflow-hidden font-sans">
+
+    <!-- Responsive Navigation Header -->
+    <header class="bg-pork-blue text-white p-4 shadow-md flex justify-between items-center z-10">
+        <div class="max-w-md mx-auto w-full flex justify-between items-center">
+            <h1 class="text-xl font-black tracking-wide uppercase">Pork Hub Menu</h1>
+            <span id="active-user-badge" class="text-[11px] bg-blue-900/60 px-3 py-1 rounded-full font-bold hidden"></span>
+        </div>
+    </header>
+
+    <!-- LIVE LOGISTICS POPUP MODAL -->
+    <div id="logistics-modal" class="hidden fixed inset-0 bg-black/70 z-50 flex justify-center items-center p-4 backdrop-blur-sm">
+        <div class="bg-white p-6 rounded-2xl shadow-2xl w-full max-w-sm text-center space-y-4">
+            <h3 class="text-xl font-black text-slate-900 uppercase">Your Order Is Ready!</h3>
+            <p class="text-sm font-medium text-gray-700">Select serving preference:</p>
+            <div class="grid grid-cols-2 gap-3 pt-2">
+                <button onclick="submitLogistics('Takeaway')" class="bg-pork-gold text-slate-900 font-black py-4 rounded-xl flex flex-col items-center shadow hover:opacity-90">🛍️ Takeaway</button>
+                <button onclick="submitLogistics('Dine-In')" class="bg-pork-blue text-white font-black py-4 rounded-xl flex flex-col items-center shadow hover:opacity-90">🍽️ Serve on Tray</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN APP WRAPPER (Adapts to mobile, tablets, and desktops safely) -->
+    <main class="flex-1 flex flex-col overflow-hidden p-4 max-w-md mx-auto w-full bg-white shadow-xl relative border-x border-gray-200">
+        
+        <!-- CUSTOMER AUTH GATEWAY (Overlay responsive modal) -->
+        <div id="auth-gate" class="absolute inset-0 bg-slate-100 z-40 p-6 flex flex-col justify-center items-center">
+            <div class="bg-white p-6 rounded-2xl shadow-xl w-full max-w-xs space-y-4 text-center">
+                <div class="space-y-1">
+                    <h3 class="text-lg font-black text-pork-blue uppercase">Diner Access</h3>
+                    <p class="text-[11px] text-gray-500 font-medium">Order from home or inside our outlet</p>
+                </div>
+                <input type="text" id="cust-name" placeholder="Enter Your Name" class="w-full p-3 text-sm rounded-xl border border-gray-300 outline-none bg-white font-medium focus:border-pork-blue">
+                <input type="tel" id="cust-phone" placeholder="Phone Number (e.g., 07...)" class="w-full p-3 text-sm rounded-xl border border-gray-300 outline-none text-center bg-white font-medium focus:border-pork-blue">
+                <button onclick="loginCustomer()" class="w-full bg-pork-blue hover:bg-blue-800 transition text-white font-black py-3 rounded-xl uppercase text-xs tracking-wider shadow">Enter Dining Hub</button>
+            </div>
+        </div>
+
+        <!-- MENU AND BASKET PANEL -->
+        <div class="flex-1 flex flex-col justify-between overflow-hidden">
+            <div class="space-y-4 overflow-y-auto flex-1 pb-4">
+                
+                <!-- SERVICE LOCATION SELECTOR MATRIX -->
+                <div class="bg-blue-50 border border-blue-200/60 p-3 rounded-xl space-y-3">
+                    <div>
+                        <label class="block text-[10px] font-black text-pork-blue uppercase tracking-wider mb-1.5">Where are you ordering from?</label>
+                        <div class="grid grid-cols-2 gap-2">
+                            <button id="mode-home" onclick="setServiceMode('Home')" class="py-2.5 rounded-lg font-bold text-xs bg-pork-blue text-white shadow-sm transition-all">🏠 From Home</button>
+                            <button id="mode-outlet" onclick="setServiceMode('Outlet')" class="py-2.5 rounded-lg font-bold text-xs bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 transition-all">📍 Inside Outlet</button>
+                        </div>
+                    </div>
+
+                    <!-- DYNAMIC SUB-FIELDS -->
+                    <div id="location-input-box" class="hidden animate-fadeIn">
+                        <label class="block text-[10px] font-black text-gray-500 uppercase tracking-wider mb-1">Specify Table Number / Spot:</label>
+                        <input type="text" id="cust-location" placeholder="e.g., Table 4, Counter Seat 2" class="w-full p-2.5 text-xs rounded-lg border border-gray-300 bg-white outline-none font-bold text-pork-blue focus:border-pork-blue">
+                    </div>
+                    <div id="home-notice-box" class="bg-blue-100/50 p-2.5 rounded-lg border border-blue-200/40 text-center">
+                        <p class="text-[11px] text-blue-900 font-bold">🛍️ Set for pre-packed takeaway collection or delivery setup.</p>
+                    </div>
+                </div>
+
+                <!-- MENU CATALOG -->
+                <div>
+                    <h3 class="text-[11px] font-black text-gray-400 uppercase tracking-wider mb-2">Available Cuts</h3>
+                    <div class="space-y-2.5" id="menu-box"></div>
+                </div>
+            </div>
+
+            <!-- FIXED BOTTOM BILL BASKET -->
+            <div class="bg-slate-50 border border-gray-200 p-3.5 rounded-2xl shadow-inner mt-2">
+                <div class="flex justify-between items-center mb-3">
+                    <span class="font-bold text-gray-500 text-xs uppercase tracking-wide">Total Bill Amount:</span>
+                    <span id="total-bill" class="text-lg font-black text-pork-blue">0 UGX</span>
+                </div>
+                <button onclick="sendOrderToCloud()" class="w-full bg-pork-green hover:bg-green-800 transition text-white font-black py-3 rounded-xl uppercase text-xs tracking-wider shadow-md">Send Order to Kitchen</button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Load Firebase Core and Realtime Database Legacy Compat Libraries -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+
+    <script>
+        // Paste your exact unique Firebase configuration object parameters here:
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_AUTH_DOMAIN",
+            databaseURL: "YOUR_DATABASE_URL",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_STORAGE_BUCKET",
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        const menu = { 
+            fried1kg: { name: "Fried Pork (1 Kg)", price: 18000 }, 
+            choma1kg: { name: "Choma Roast (1 Kg)", price: 20000 } 
+        };
+        let cart = { fried1kg: 0, choma1kg: 0 };
+        let activeUser = null;
+        let activeTicketId = null;
+        let currentServiceMode = "Home";
+
+        function loginCustomer() {
+            let n = document.getElementById('cust-name').value.trim();
+            let p = document.getElementById('cust-phone').value.trim();
+            if(!n || !p) return alert("Please fill in your name and phone number to proceed.");
+            activeUser = { name: n, phone: p };
+            
+            document.getElementById('auth-gate').classList.add('hidden');
+            const badge = document.getElementById('active-user-badge');
+            badge.innerText = `👤 ${n.split(' ')[0]}`;
+            badge.classList.remove('hidden');
+            
+            renderMenu();
+        }
+
+        function setServiceMode(mode) {
+            currentServiceMode = mode;
+            const btnHome = document.getElementById('mode-home');
+            const btnOutlet = document.getElementById('mode-outlet');
+            const locBox = document.getElementById('location-input-box');
+            const homeBox = document.getElementById('home-notice-box');
+
+            if (mode === 'Home') {
+                btnHome.className = "py-2.5 rounded-lg font-bold text-xs bg-pork-blue text-white shadow-sm transition-all";
+                btnOutlet.className = "py-2.5 rounded-lg font-bold text-xs bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 transition-all";
+                locBox.classList.add('hidden');
+                homeBox.classList.remove('hidden');
+                document.getElementById('cust-location').value = "";
+            } else {
+                btnOutlet.className = "py-2.5 rounded-lg font-bold text-xs bg-pork-blue text-white shadow-sm transition-all";
+                btnHome.className = "py-2.5 rounded-lg font-bold text-xs bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 transition-all";
+                locBox.classList.remove('hidden');
+                homeBox.classList.add('hidden');
+            }
+        }
+
+        function renderMenu() {
+            const box = document.getElementById('menu-box');
+            box.innerHTML = "";
+            for (const key in menu) {
+                box.innerHTML += `
+                    <div class="bg-white p-3.5 rounded-xl border border-gray-200 flex justify-between items-center text-xs shadow-sm">
+                        <div>
+                            <h4 class="font-black text-slate-800 text-sm mb-0.5">${menu[key].name}</h4>
+                            <p class="text-pork-green font-black">${menu[key].price.toLocaleString()} UGX</p>
+                        </div>
+                        <div class="flex items-center space-x-3 bg-gray-100 p-1 rounded-lg">
+                            <button onclick="updateQty('${key}', -1)" class="w-7 h-7 bg-white shadow-sm rounded-md font-black text-gray-600 hover:bg-gray-50 text-sm flex items-center justify-center">-</button>
+                            <span id="q-${key}" class="font-black text-slate-800 text-sm px-1">0</span>
+                            <button onclick="updateQty('${key}', 1)" class="w-7 h-7 bg-pork-blue text-white shadow-sm rounded-md font-black text-sm flex items-center justify-center hover:opacity-90">+</button>
+                        </div>
+                    </div>`;
+            }
+        }
+
+        function updateQty(key, delta) {
+            cart[key] = Math.max(0, cart[key] + delta);
+            document.getElementById(`q-${key}`).innerText = cart[key];
+            let sum = 0;
+            for(const k in cart) sum += cart[k] * menu[k].price;
+            document.getElementById('total-bill').innerText = sum.toLocaleString() + " UGX";
+        }
+
+        function sendOrderToCloud() {
+            let loc = "Remote Order (From Home)";
+            let logisticsStyle = "Takeaway";
+
+            if (currentServiceMode === 'Outlet') {
+                let tableInput = document.getElementById('cust-location').value.trim();
+                if(!tableInput) return alert("Please specify your current Table Number or location space.");
+                loc = "Table: " + tableInput;
+                logisticsStyle = "Dine-In";
+            }
+            
+            let items = []; let sum = 0;
+            for(const k in cart) {
+                if(cart[k] > 0) { items.push(`${cart[k]}x ${menu[k].name}`); sum += cart[k] * menu[k].price; }
+            }
+            if(items.length === 0) return alert("Your basket is empty. Please select an item first.");
+
+            let ticketId = `PK-${Math.floor(Math.random()*900)+100}`;
+            activeTicketId = ticketId;
+
+            // Push payload upstream to shared database instance
+            database.ref('orders/' + ticketId).set({
+                id: ticketId,
+                name: activeUser.name,
+                phone: activeUser.phone,
+                location: loc,
+                details: items.join(", "),
+                priceValue: sum,
+                status: 'Queued',
+                logistics: logisticsStyle,
+                timestamp: Date.now()
+            });
+
+            alert(`Order ${ticketId} Sent Successfully! Processing in kitchen queue system...`);
+            listenForStatusUpdates(ticketId);
+        }
+
+        function listenForStatusUpdates(ticketId) {
+            database.ref('orders/' + ticketId).on('value', (snapshot) => {
+                let data = snapshot.val();
+                if(!data) return;
+                
+                if(data.status === 'Ready' && currentServiceMode === 'Outlet') {
+                    document.getElementById('logistics-modal').classList.remove('hidden');
+                } else if (data.status === 'Ready' && currentServiceMode === 'Home') {
+                    alert("✨ Your home order has been cooked and carefully packed! Ready for your collection/dispatch carrier setup.");
+                    database.ref('orders/' + ticketId).update({ status: 'Assembled' });
+                }
+            });
+        }
+
+        function submitLogistics(choice) {
+            database.ref('orders/' + activeTicketId).update({
+                status: 'Assembled',
+                logistics: choice
+            });
+            document.getElementById('logistics-modal').classList.add('hidden');
+            activeTicketId = null;
+            alert("Preference logged! Enjoy your meal.");
+        }
+    </script>
+</body>
+</html>

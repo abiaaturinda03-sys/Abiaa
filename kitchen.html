@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pork Hub - Kitchen Monitor</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        * { margin: 0px; padding: 0px; box-sizing: border-box; }
+        .bg-pork-blue { background-color: #1e3a8a; }
+        .bg-pork-green { background-color: #15803d; }
+        .text-pork-gold { color: #eab308; }
+    </style>
+</head>
+<body class="bg-slate-950 text-white h-screen flex flex-col overflow-hidden font-sans">
+
+    <!-- Operational System Control Bar -->
+    <header class="bg-pork-blue p-4 shadow-md flex justify-between items-center border-b border-blue-900">
+        <div class="max-w-6xl mx-auto w-full flex justify-between items-center">
+            <h1 class="text-lg font-black uppercase tracking-wider">Kitchen Operations Hub</h1>
+            <div class="flex items-center space-x-2">
+                <span class="w-2 h-2 bg-emerald-400 rounded-full animate-ping"></span>
+                <span class="text-[10px] uppercase font-bold tracking-widest text-emerald-400">Live Server Stream Active</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN MONITOR VIEWPORT FRAME (Responsive Grid Layer) -->
+    <main class="flex-1 p-4 max-w-6xl mx-auto w-full flex flex-col overflow-hidden">
+        <div class="flex justify-between items-center mb-3">
+            <h2 class="text-xs font-black text-pork-gold uppercase tracking-widest">Active Order Queue Feed</h2>
+            <span id="queue-counter" class="text-[11px] bg-slate-900 border border-slate-800 px-2.5 py-0.5 rounded font-bold text-slate-400">0 Tickets Open</span>
+        </div>
+        
+        <!-- FLEXIBLE ORDER FEED GRID (Changes columns based on available device screen size) -->
+        <div id="kitchen-queue" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 flex-1 overflow-y-auto pb-4 items-start">
+            <!-- Order cards are appended dynamically into this responsive slot arrangement -->
+        </div>
+    </main>
+
+    <!-- Load Firebase Core and Realtime Database Legacy Compat Libraries -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+
+    <script>
+        // Paste your exact identical Firebase configuration object parameters here:
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_AUTH_DOMAIN",
+            databaseURL: "YOUR_DATABASE_URL",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_STORAGE_BUCKET",
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        // LIVE STREAM CLOUD EVENT BOUNDARY LISTENER
+        database.ref('orders').orderByChild('timestamp').on('value', (snapshot) => {
+            let ordersData = snapshot.val();
+            const container = document.getElementById('kitchen-queue');
+            const counter = document.getElementById('queue-counter');
+            container.innerHTML = "";
+
+            if (!ordersData) {
+                container.innerHTML = `
+                    <div class="col-span-full flex flex-col items-center justify-center py-16 text-slate-600 space-y-2">
+                        <span class="text-3xl">📭</span>
+                        <p class="text-xs italic font-medium">No open orders currently pending in system stream.</p>
+                    </div>`;
+                counter.innerText = "0 Tickets Open";
+                return;
+            }
+
+            let ticketCount = 0;
+
+            for (let id in ordersData) {
+                ticketCount++;
+                let o = ordersData[id];
+                let actionBtn = "";
+                let statusBadge = "";
+
+                // Logistics Status Badges Configuration
+                if (o.location.includes("Home")) {
+                    statusBadge = `<span class="bg-amber-950/80 text-amber-400 border border-amber-900/50 text-[9px] px-2 py-0.5 rounded-md font-bold uppercase">🏠 Home Delivery/Takeaway</span>`;
+                } else {
+                    statusBadge = `<span class="bg-blue-950/80 text-blue-400 border border-blue-900/50 text-[9px] px-2 py-0.5 rounded-md font-bold uppercase">📍 Serving In House</span>`;
+                }
+
+                // Stage Management Operational Switches
+                if(o.status === 'Queued') {
+                    actionBtn = `<button onclick="markStatus('${o.id}', 'Ready')" class="w-full mt-3 bg-pork-green hover:bg-green-700 transition text-white font-black text-xs py-2 rounded-lg uppercase tracking-wider shadow">Mark Cooked & Alert</button>`;
+                } else if(o.status === 'Ready') {
+                    actionBtn = `
+                        <div class="mt-3 bg-slate-900/60 p-2.5 rounded-lg border border-dashed border-slate-700 text-center animate-pulse">
+                            <p class="text-[10px] font-bold text-yellow-500 uppercase tracking-wider">Awaiting User Packaging Selection...</p>
+                        </div>`;
+                } else if(o.status === 'Assembled') {
+                    actionBtn = `
+                        <div class="bg-slate-900 border border-slate-800 p-2.5 rounded-lg mt-3 text-xs space-y-2">
+                            <div class="flex justify-between items-center">
+                                <span class="text-slate-400 font-bold text-[10px] uppercase">Pack Form:</span>
+                                <span class="font-black text-pork-gold tracking-wide text-[11px] uppercase">${o.logistics === 'Takeaway' ? '🛍️ Takeaway Bag' : '🍽️ Wood Platter'}</span>
+                            </div>
+                            <button onclick="archiveOrder('${o.id}')" class="w-full bg-blue-900 hover:bg-blue-800 transition text-white py-1.5 rounded-md font-black text-[11px] uppercase tracking-wide">Settle & Clear Ticket</button>
+                        </div>`;
+                }
+
+                container.innerHTML += `
+                    <div class="bg-slate-900 p-4 rounded-xl border border-slate-800 text-xs shadow-md hover:border-slate-700 transition flex flex-col justify-between self-start">
+                        <div class="space-y-2">
+                            <div class="flex justify-between items-start font-black text-sm tracking-wide">
+                                <span class="text-white bg-slate-800 px-2 py-0.5 rounded">${o.id}</span>
+                                <span class="text-pork-gold max-w-[150px] truncate">${o.location.replace("Table: ", "Tab ")}</span>
+                            </div>
+                            <div class="flex flex-col space-y-0.5 border-b border-slate-800/80 pb-2">
+                                <p class="text-slate-400 font-bold text-[11px]">Contact: <span class="text-slate-200">${o.name}</span></p>
+                                <p class="text-slate-400 font-bold text-[11px]">Phone: <span class="text-slate-300 font-mono">${o.phone}</span></p>
+                            </div>
+                            <div class="py-1">
+                                <p class="text-slate-100 font-mono font-bold text-xs bg-slate-950 p-2.5 rounded-lg border border-slate-800/60 leading-relaxed">${o.details}</p>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="mt-2.5 flex justify-between items-center text-[11px] font-bold">
+                                <span class="text-slate-400">Bill Value:</span>
+                                <span class="text-pork-green font-black text-xs">${o.priceValue.toLocaleString()} UGX</span>
+                            </div>
+                            <div class="mt-2">
+                                ${statusBadge}
+                            </div>
+                            ${actionBtn}
+                        </div>
+                    </div>`;
+            }
+
+            counter.innerText = `${ticketCount} ${ticketCount === 1 ? 'Ticket' : 'Tickets'} Open`;
+        });
+
+        function markStatus(id, newStatus) {
+            database.ref('orders/' + id).update({ status: newStatus });
+        }
+
+        function archiveOrder(id) {
+            database.ref('orders/' + id).remove();
+        }
+    </script>
+</body>
+</html>
